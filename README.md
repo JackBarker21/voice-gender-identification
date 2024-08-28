@@ -183,3 +183,11 @@ output_csv = 'output_full.csv'  # Name of the output CSV file
 process_directory(directory, output_csv)
 ```
 ![Screenshot: Full Visual](screenshots/Full_Visual.png)
+
+## Reflection and Future Improvements
+This analysis underscores the importance of feature selection, data preprocessing, and model choice in building an effective gender classification model. Although XGBoost proved robust, our model's 82% accuracy fell short of the higher accuracy achieved by a Kaggle dataset, possibly due to differences in techniques and dataset composition. The smaller and potentially mislabeled Common Voice dataset may have impacted results. Future improvements could include refining feature extraction, expanding the dataset, and exploring alternative models. Despite limitations, the model developed achieves 82% accuracy, providing a useful tool for gender-based dataset filtering.
+
+## References
+["Kaggle dataset"](https://www.kaggle.com/datasets/primaryobjects/voicegender/data)
+["Primary Object Document"](https://www.primaryobjects.com/2016/06/22/identifying-the-gender-of-a-voice-using-machine-learning/)
+["R Library WarbleR"](https://www.rdocumentation.org/packages/warbleR/versions/1.1.32)
