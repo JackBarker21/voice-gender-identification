@@ -66,3 +66,120 @@ accuracy = accuracy_score(y_test, predictions)
 print("Accuracy: %.2f%%" % (accuracy * 100.0))
 ```
 This achieves an accuracy of 98.53%
+
+## Feature Engineering and Model Development
+The original Kaggle data achieved an amazing 98.53% accuracy. However, the original analysis lacked transparency regarding the source of the audio features, as the features were extracted using R libraries such as ["WarbleR"](https://www.rdocumentation.org/packages/warbleR/versions/1.1.32), which poses a challenge for reproducibility, especially when working with new datasets.
+
+Given this limitation, I conducted a feature importance analysis using XGBoost. This analysis revealed that the “meanfun” feature, which represents the mean fundamental frequency, was the most critical predictor of gender. Remarkably, a model trained solely on “meanfun” achieved an accuracy of 94.74%.
+```Python
+import xgboost as xgb
+from xgboost import plot_importance
+import matplotlib.pyplot as plt
+
+plot_importance(model, importance_type='weight')
+plt.show()
+```
+![Screenshot: Feature_Importance](screenshots/feature_importance.png)
+
+Further training using the top four features (“meanfun,” “mode”, “IQR”, and “Q25”) resulted in an accuracy of 97.9%, which is only slightly lower than the accuracy achieved using all 20 features. This demonstrates that a more streamlined model using fewer features can still perform exceptionally well, with minimal loss in accuracy.
+
+## Replication and Validation with Common Voice Dataset
+To ensure the robustness and generalisability of the model, I applied the feature extraction process to a new dataset sourced from Common Voice, an open-source project with a diverse collection of audio recordings. The dataset was filtered to include 4,000 files (2,000 male and 2,000 female) for balanced training. Feature extraction was performed in Python, focusing on the four key features identified earlier.
+The initial model trained on this dataset achieved an accuracy of 74%, which, while better than random guessing, falls short of the performance observed with the Kaggle dataset. 
+I then added noise removal in the code achieving an accuracy score of 82% for this Common Voice data.
+```Python
+import os
+import numpy as np
+import librosa
+
+def calculate_features(audio_file, threshold=5, fmax=280, wl=2048, max_duration=20):
+    # Load only the first max_duration seconds of the audio file
+    y, sr = librosa.load(audio_file, duration=max_duration)
+    
+    # Remove silence from the audio signal
+    y = remove_silence(y, sr)
+    
+    # Short-Time Fourier Transform (STFT)
+    S = np.abs(librosa.stft(y, n_fft=wl))
+    
+    # Compute power spectral density (PSD)
+    psd = np.mean(S**2, axis=1)  # Mean power across all time frames
+    
+    # Frequency spectrum in Hz
+    frequencies = librosa.fft_frequencies(sr=sr, n_fft=wl)
+    
+    # Calculate power-weighted IQR and Q25
+    cumulative_power = np.cumsum(psd) / np.sum(psd)  # Cumulative sum of power (normalized to 1)
+    
+    Q25_idx = np.where(cumulative_power >= 0.25)[0][0]  # Index where cumulative power exceeds 25%
+    Q75_idx = np.where(cumulative_power >= 0.75)[0][0]  # Index where cumulative power exceeds 75%
+    
+    Q25 = frequencies[Q25_idx] / 1000  # Convert to kHz
+    Q75 = frequencies[Q75_idx] / 1000  # Convert to kHz
+    IQR = (Q75 - Q25)  # Interquartile range in kHz
+    
+    # Find the frequency corresponding to the maximum power (mode frequency)
+    modefreq = frequencies[np.argmax(psd)] / 1000  # Convert to kHz
+    
+    # Fundamental Frequency Calculation
+    pitches, magnitudes = librosa.core.piptrack(y=y, sr=sr, fmax=fmax)
+    
+    # Thresholding
+    pitches = pitches[magnitudes > threshold]
+    
+    # Fundamental frequency (in kHz)
+    if len(pitches) > 0:
+        meanfun = np.mean(pitches[pitches > 0]) / 1000  # Convert to kHz
+    else:
+        meanfun = 0
+    
+    # Return results as a dictionary
+    return {
+        "filename": os.path.basename(audio_file),
+        "meanfun": meanfun,
+        "IQR": IQR,
+        "modefreq": modefreq,
+        "Q25": Q25
+    }
+
+def remove_silence(y, sr, top_db=20):
+    # Trim leading and trailing silence from an audio signal
+    yt, _ = librosa.effects.trim(y, top_db=top_db)
+    return yt
+
+def process_directory(directory, output_csv):
+    # List to store all results
+    results = []
+    
+    # Loop through all .wav files in the directory
+    for filename in os.listdir(directory):
+        if filename.endswith(".wav"):
+            filepath = os.path.join(directory, filename)
+            # Calculate the acoustic parameters
+            try:
+                result = calculate_features(filepath)
+                results.append(result)
+            except Exception as e:
+                print(f"Error processing {filename}: {e}")
+    
+    # Write results to a CSV file
+    with open(output_csv, 'w', newline='') as csvfile:
+        fieldnames = ["filename", "meanfun", "IQR", "modefreq", "Q25"]
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        
+        # Write header
+        writer.writeheader()
+        
+        # Write each result to the CSV
+        for row in results:
+            writer.writerow(row)
+    
+    print(f"Processing complete. Results saved to {output_csv}")
+
+# Example usage:
+directory = 'audio_data'  # Directory containing your .wav files
+output_csv = 'output_full.csv'  # Name of the output CSV file
+
+process_directory(directory, output_csv)
+```
+![Screenshot: Full Visual](screenshots/Full_Visual.png)
