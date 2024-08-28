@@ -5,7 +5,7 @@
 This project explores the development of an automated gender classifier using machine learning techniques to improve data balance and mitigate biases in audio datasets. By accurately identifying the speaker's gender, this solution enhances the fairness and representativeness of datasets, benefiting various applications such as speech recognition and beyond. This classifier helps organisations improve model performance and adhere to ethical standards in AI development.
 
 ## Data Preprocessing
-The data analysis process begins by exploring a ["Kaggle dataset"](https://www.kaggle.com/datasets/primaryobjects/voicegender/data) with 20 audio features and a gender label. The dataset is pre-cleaned and standardized, simplifying initial analysis. After loading and inspecting the dataset using Python and Pandas, the goal is to ensure it meets model training conditions. A benchmark accuracy of 50% is set by predicting the majority class ("male") in a balanced dataset, providing a baseline for evaluating any machine learning models developed.
+The data analysis process begins by exploring a ["Kaggle dataset"](https://www.kaggle.com/datasets/primaryobjects/voicegender/data) with 20 audio features and a gender label. The dataset is pre-cleaned and standardised, simplifying initial analysis. After loading and inspecting the dataset using Python and Pandas, the goal is to ensure it meets model training conditions. A benchmark accuracy of 50% is set by predicting the majority class ("male") in a balanced dataset, providing a baseline for evaluating any machine learning models developed.
 
 ## Initial Exploration
 Using Python and Pandas, I will load and inspect the dataset to ensure it meets the necessary conditions for model training.
@@ -188,6 +188,6 @@ process_directory(directory, output_csv)
 This analysis underscores the importance of feature selection, data preprocessing, and model choice in building an effective gender classification model. Although XGBoost proved robust, our model's 82% accuracy fell short of the higher accuracy achieved by a Kaggle dataset, possibly due to differences in techniques and dataset composition. The smaller and potentially mislabeled Common Voice dataset may have impacted results. Future improvements could include refining feature extraction, expanding the dataset, and exploring alternative models. Despite limitations, the model developed achieves 82% accuracy, providing a useful tool for gender-based dataset filtering.
 
 ## References
-["Kaggle dataset"](https://www.kaggle.com/datasets/primaryobjects/voicegender/data)
-["Primary Object Document"](https://www.primaryobjects.com/2016/06/22/identifying-the-gender-of-a-voice-using-machine-learning/)
-["R Library WarbleR"](https://www.rdocumentation.org/packages/warbleR/versions/1.1.32)
+1. ["Kaggle dataset"](https://www.kaggle.com/datasets/primaryobjects/voicegender/data)
+2. ["Primary Object Document"](https://www.primaryobjects.com/2016/06/22/identifying-the-gender-of-a-voice-using-machine-learning/)
+3. ["R Library WarbleR"](https://www.rdocumentation.org/packages/warbleR/versions/1.1.32)
